@@ -1,0 +1,23 @@
+{
+  "name": "kafka-node-demo",
+  "version": "1.0.0",
+  "description": "Example of node app working with kafka and redis",
+  "main": "app.js",
+  "scripts": {
+    "start": "npx nodemon server.js"
+  },
+  "keywords": [
+    "node",
+    "kafka",
+    "redis"
+  ],
+  "author": "Fabian Calsina (Fabho)",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.18"
+  }
+}
