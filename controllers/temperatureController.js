@@ -1,43 +1,26 @@
 const kafka = require('kafka-node');
 const crypto = require('crypto');
+const redis = require('redis');
 const type = require('../models/EntrySchema');
+//const redisClient = require('../models/RedisClient');
 
-exports.getFahrenheitTemperature = /*async*/ (req, res, next) => {
-  /*const tour = await Tour.findById(req.params.id);
-
-  if(!tour) {
-    return next(new AppError('No tour found with that ID', 404))
-  }
-  try
-        {
-            var entry = new Entry
-            {
-                Key = Guid.NewGuid().ToString(),
-                Temperature = temperature
-            };
-            Producer producer = new Producer();
-            await producer.SendMessage(entry);
-
-            var response = await _clientPolicy.ExceptionHttpRetry.ExecuteAsync(async () => { Console.WriteLine("intento"); return await _entryRepoRedis.GetEntryByKey(entry.Key); });
-            Console.WriteLine(response.ToString());
-            return Ok(response);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-            throw;
-        }
-  */
+exports.getFahrenheitTemperature = async (req, res, next) => {
   try{
-    const kafkaClientOptions = { sessionTimeout: 100, spinDelay: 100, retries: 5 };
-    const kafkaClient = new kafka.Client(process.env.KAFKA_ZOOKEEPER_CONNECT, 'test-topic', kafkaClientOptions);
+    const client = redis.createClient();
+    client.on('error', (err) => console.log('Redis Client Error', err));
+    await client.connect();
+    
+    //const kafkaClientOptions = { sessionTimeout: 100, spinDelay: 100, retries: 5 };
+    const kafkaClient = new kafka.KafkaClient('localhost:2181', 'test-topic');
     const kafkaProducer = new kafka.HighLevelProducer(kafkaClient);
     
     kafkaClient.on('error', (error) => console.error('Kafka client error:', error));
     kafkaProducer.on('error', (error) => console.error('Kafka producer error:', error));
 
+    const uuid = crypto.randomUUID();
+
     const messageBuffer = type.toBuffer({
-      key: crypto.randomUUID(),
+      key: uuid,
       temperature: Number(req.params.id)
     });
 
@@ -46,19 +29,21 @@ exports.getFahrenheitTemperature = /*async*/ (req, res, next) => {
       messages: messageBuffer,
       attributes: 1
     }];
-    console.log("******************")
-    console.log(process.env.KAFKA_ZOOKEEPER_CONNECT)
-    console.log("******************")
-    kafkaProducer.send(payload, function(err, res) {
+    
+    kafkaProducer.send(payload, function(error, result) {
       
       console.info('Payload: ', payload);
       
-      if (err) {
-        console.error('Sending payload failed:', err);
+      if (error) {
+        console.error('Sending payload failed:', error);
         res.status(500).json(error);
       } else {
-        console.log('Sending payload result:', res);
-        res.status(202).json(res);
+        console.log('Sending payload result:', result);
+        
+        
+        
+        client.set(uuid, req.params.id);
+        res.status(202).json(result);
       }
 
     });
@@ -68,11 +53,4 @@ exports.getFahrenheitTemperature = /*async*/ (req, res, next) => {
     console.log(e)
     throw new Error(`Error -> ${req.originalUrl}`);
   }
-
-  // res.status(200).json({
-  //   status: 'success',
-  //   data: {
-
-  //   }
-  // });
 };
