@@ -14,8 +14,10 @@
   "author": "Fabian Calsina (Fabho)",
   "license": "ISC",
   "dependencies": {
+    "avsc": "5.3.1",
     "dotenv": "^16.0.1",
-    "express": "^4.18.1"
+    "express": "^4.18.1",
+    "kafka-node": "2.6.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.18"

@@ -7,6 +7,6 @@ app.use(express.json({
   limit: '10kb'
 }));
 
-app.use('api/temperature', temperatureRouter);
+app.use('/api/temperature', temperatureRouter);
 
 module.exports = app;
