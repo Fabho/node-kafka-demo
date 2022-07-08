@@ -34,8 +34,6 @@ exports.getFahrenheitTemperature = async (req, res, next) => {
       } else {
 
         console.log('Sending payload result:', result);
-
-        let x = entry.Key;
       
         (function () {
           let e = new Date().getTime() + (1 * 1000);
@@ -43,7 +41,7 @@ exports.getFahrenheitTemperature = async (req, res, next) => {
           //console.log("end time")
         })();
   
-        redis.get(x, (err, r) => {
+        redis.get(entry.Key, (err, r) => {
           if (err) {
             console.error(err);
           } else {
