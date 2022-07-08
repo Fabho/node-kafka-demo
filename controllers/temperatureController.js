@@ -1,15 +1,12 @@
+const { redirect } = require('express/lib/response');
 const kafka = require('kafka-node');
-const crypto = require('crypto');
-const redis = require('redis');
-const type = require('../models/EntrySchema');
+const Redis = require("ioredis");
+const Entry = require('../models/Entry');
 //const redisClient = require('../models/RedisClient');
 
 exports.getFahrenheitTemperature = async (req, res, next) => {
   try{
-    const client = redis.createClient();
-    client.on('error', (err) => console.log('Redis Client Error', err));
-    await client.connect();
-    
+    const redis = new Redis();    
     //const kafkaClientOptions = { sessionTimeout: 100, spinDelay: 100, retries: 5 };
     const kafkaClient = new kafka.KafkaClient('localhost:2181', 'test-topic');
     const kafkaProducer = new kafka.HighLevelProducer(kafkaClient);
@@ -17,16 +14,13 @@ exports.getFahrenheitTemperature = async (req, res, next) => {
     kafkaClient.on('error', (error) => console.error('Kafka client error:', error));
     kafkaProducer.on('error', (error) => console.error('Kafka producer error:', error));
 
-    const uuid = crypto.randomUUID();
+    const entry = new Entry(Number(req.params.id));
 
-    const messageBuffer = type.toBuffer({
-      key: uuid,
-      temperature: Number(req.params.id)
-    });
+    const entryString = JSON.stringify(entry);
 
     const payload = [{
       topic: 'test-topic',
-      messages: messageBuffer,
+      messages: entryString,
       attributes: 1
     }];
     
@@ -38,14 +32,26 @@ exports.getFahrenheitTemperature = async (req, res, next) => {
         console.error('Sending payload failed:', error);
         res.status(500).json(error);
       } else {
-        console.log('Sending payload result:', result);
-        
-        
-        
-        client.set(uuid, req.params.id);
-        res.status(202).json(result);
-      }
 
+        console.log('Sending payload result:', result);
+
+        let x = entry.Key;
+      
+        (function () {
+          let e = new Date().getTime() + (1 * 1000);
+          while (new Date().getTime() <= e) {}
+          //console.log("end time")
+        })();
+  
+        redis.get(x, (err, r) => {
+          if (err) {
+            console.error(err);
+          } else {
+            res.status(202).json(r);
+          }
+        });
+
+      }
     });
 
   }
