@@ -24,21 +24,27 @@ exports.getFahrenheitTemperature = async (req, res, next) => {
       } else {
 
         console.log('Sending payload result:', result);
-      
-        (function () {
-          let e = new Date().getTime() + (1 * 1000);
-          while (new Date().getTime() <= e) {}
-          //console.log("end time")
-        })();
-  
-        ioRedisClient.get(entry.Key, (err, r) => {
-          if (err) {
-            console.error(err);
-          } else {
-            res.status(202).json(r);
-          }
-        });
+        let intervalCount = 0;
 
+        let refreshId = setInterval(function() {
+
+          ioRedisClient.get(entry.Key, (err, r) => {
+            if (err) {
+              console.error(err);
+            } else {
+              if(r != null){
+                clearInterval(refreshId);
+                res.status(202).json(JSON.parse(r));
+              }
+            }
+            
+            intervalCount++;
+            if(intervalCount >= 5)
+              clearInterval(refreshId);
+          });
+
+        }, 500);
+  
       }
     });
 
