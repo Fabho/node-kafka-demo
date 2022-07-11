@@ -1,21 +1,14 @@
-const { redirect } = require('express/lib/response');
-const kafka = require('kafka-node');
+
 const Redis = require("ioredis");
 const Entry = require('../models/Entry');
+const kafkaProducer = require('../models/KafkaProducer');
 //const redisClient = require('../models/RedisClient');
 
 exports.getFahrenheitTemperature = async (req, res, next) => {
   try{
+
     const redis = new Redis();    
-    //const kafkaClientOptions = { sessionTimeout: 100, spinDelay: 100, retries: 5 };
-    const kafkaClient = new kafka.KafkaClient('localhost:2181', 'test-topic');
-    const kafkaProducer = new kafka.HighLevelProducer(kafkaClient);
-    
-    kafkaClient.on('error', (error) => console.error('Kafka client error:', error));
-    kafkaProducer.on('error', (error) => console.error('Kafka producer error:', error));
-
     const entry = new Entry(Number(req.params.id));
-
     const entryString = JSON.stringify(entry);
 
     const payload = [{
