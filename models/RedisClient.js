@@ -1,8 +1,4 @@
-const createClient  = require('redis');
+const Redis = require("ioredis");
+const ioRedisClient = new Redis(); 
 
-const redisClient = createClient();
-
-redisClient.on('error', (err) => console.log('Redis Client Error', err));
-await redisClient.connect();
-
-module.exports = redisClient;
+module.exports = ioRedisClient;

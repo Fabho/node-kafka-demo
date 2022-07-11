@@ -1,13 +1,10 @@
-
-const Redis = require("ioredis");
 const Entry = require('../models/Entry');
 const kafkaProducer = require('../models/KafkaProducer');
-//const redisClient = require('../models/RedisClient');
+const ioRedisClient = require('../models/RedisClient');
 
 exports.getFahrenheitTemperature = async (req, res, next) => {
   try{
-
-    const redis = new Redis();    
+       
     const entry = new Entry(Number(req.params.id));
     const entryString = JSON.stringify(entry);
 
@@ -34,7 +31,7 @@ exports.getFahrenheitTemperature = async (req, res, next) => {
           //console.log("end time")
         })();
   
-        redis.get(entry.Key, (err, r) => {
+        ioRedisClient.get(entry.Key, (err, r) => {
           if (err) {
             console.error(err);
           } else {
